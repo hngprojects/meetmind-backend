@@ -14,6 +14,11 @@ class Settings(BaseSettings):
 
     PROJECT_NAME: str = "fastapi-starter"
     API_V1_PREFIX: str = "/api/v1"
+    JWT_ACCESS_SECRET: str
+    JWT_REFRESH_SECRET: str
+
+
+
 
     DATABASE_URL: PostgresDsn
 

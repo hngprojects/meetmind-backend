@@ -1,12 +1,19 @@
 import uuid
 from datetime import datetime
+from enum import Enum
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import Enum as SQLEnum
 
 from app.models.base import Base, TimestampMixin, UUIDPrimaryKey
 
+
+class AccountState(str, Enum):
+    VERIFIED = "verified"
+    UNVERIFIED = "unverified"
+    INCOMPLETE_ONBOARDING = "incomplete_onboarding"
 
 class User(Base, UUIDPrimaryKey, TimestampMixin):
     __tablename__ = "users"
@@ -19,6 +26,9 @@ class User(Base, UUIDPrimaryKey, TimestampMixin):
     job_title: Mapped[str | None] = mapped_column(String(80))
     company: Mapped[str | None] = mapped_column(String(120))
     role: Mapped[str | None] = mapped_column(String(60))
+    account_state: Mapped[AccountState] = mapped_column(
+        SQLEnum(AccountState), default=AccountState.UNVERIFIED, nullable=False
+    )
 
 
 class SSOProvider(Base, UUIDPrimaryKey):
