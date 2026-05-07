@@ -34,7 +34,11 @@ class SignupRequest(BaseModel):
 
 
 class SignInRequest(BaseModel):
-    """Payload for user sign-in."""
+    """
+    Payload for user authentication.
+    
+    Contains the user's email address and plaintext password.
+    """
     email: EmailStr = Field(..., max_length=255, description="User's email address")
     password: str = Field(..., description="User's password")
 

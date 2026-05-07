@@ -62,7 +62,12 @@ class AuthService:
     
     @staticmethod
     async def signin_user(db: AsyncSession, request: SignInRequest) -> dict:
-        """Authenticate a user and return session tokens."""
+        """
+        Authenticate a user and return session tokens.
+        
+        Validates the provided email and password against the database, 
+        and issues access and refresh tokens upon successful authentication.
+        """
         query = select(User).where(User.email == request.email)
         result = await db.execute(query)
         user = result.scalar_one_or_none()

@@ -22,6 +22,12 @@ async def signin(
     db: AsyncSession = Depends(get_session), 
     response: Response = None
 ) -> APIResponse:
+    """
+    Authenticate a user with email and password.
+    
+    Sets secure HttpOnly cookies for access and refresh tokens and returns 
+    the account state.
+    """
     result = await AuthService.signin_user(db, request)
     
     # Set Access Token Cookie
