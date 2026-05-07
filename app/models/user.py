@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID
@@ -10,10 +10,11 @@ from sqlalchemy import Enum as SQLEnum
 from app.models.base import Base, TimestampMixin, UUIDPrimaryKey
 
 
-class AccountState(str, Enum):
+class AccountState(StrEnum):
     VERIFIED = "verified"
     UNVERIFIED = "unverified"
     INCOMPLETE_ONBOARDING = "incomplete_onboarding"
+
 
 class User(Base, UUIDPrimaryKey, TimestampMixin):
     __tablename__ = "users"
@@ -27,7 +28,24 @@ class User(Base, UUIDPrimaryKey, TimestampMixin):
     company: Mapped[str | None] = mapped_column(String(120))
     role: Mapped[str | None] = mapped_column(String(60))
     account_state: Mapped[AccountState] = mapped_column(
-        SQLEnum(AccountState), default=AccountState.UNVERIFIED, nullable=False
+        SQLEnum(AccountState), 
+        server_default=AccountState.UNVERIFIED, 
+        nullable=False
+    )
+    is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
+class RefreshToken(Base, UUIDPrimaryKey):
+    __tablename__ = "refresh_tokens"
+ 
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False
+    )
+    token_hash: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    revoked: Mapped[bool | None] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
 
@@ -64,6 +82,7 @@ class ActiveSession(Base, UUIDPrimaryKey):
     user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id"), nullable=False
     )
+    refresh_token_hash: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     device_hint: Mapped[str | None] = mapped_column(String(120))
     ip_address: Mapped[str | None] = mapped_column(String(45))
     last_seen_at: Mapped[datetime | None] = mapped_column(DateTime)
