@@ -5,6 +5,7 @@ Endpoints under test
 --------------------
 GET /api/v1/candidates/{candidate_id}  — retrieve full candidate profile
 
+
 Each test registers a unique user so sessions never collide across the
 shared in-memory SQLite database.
 
