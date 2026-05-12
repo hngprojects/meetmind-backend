@@ -3,18 +3,18 @@
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, status
+from sqlalchemy import select
 
 from app.api.deps import CurrentUser, DBSession
-from app.schemas.candidate import CandidateProfileOut
 from app.models.interview import (
     Candidate,
     Interview,
-    InterviewSummary,
     InterviewHighlight,
     InterviewRedFlag,
     InterviewSkillToAssess,
+    InterviewSummary,
 )
-from sqlalchemy import select
+from app.schemas.candidate import CandidateProfileOut
 
 router = APIRouter()
 

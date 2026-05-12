@@ -72,7 +72,9 @@ def auth_headers(token: str) -> dict:
 
 class TestGetCandidate:
     @pytest.mark.anyio
-    async def test_returns_candidate_profile(self, client: AsyncClient, db_session: AsyncSession):
+    async def test_returns_candidate_profile(
+        self, client: AsyncClient, db_session: AsyncSession
+    ):
         """
         GIVEN a candidate exists in the database with all optional fields filled
         WHEN  GET /candidates/{id} is called
@@ -153,7 +155,9 @@ class TestGetCandidate:
             headers=auth_headers(token),
         )
         body = response.json()
-        logger.info("[not found] GET /candidates/%s → %d", fake_id, response.status_code)
+        logger.info(
+            "[not found] GET /candidates/%s → %d", fake_id, response.status_code
+        )
 
         assert response.status_code == 404, (
             f"Expected 404 but got {response.status_code}. Body: {body}"
@@ -161,7 +165,9 @@ class TestGetCandidate:
         logger.info("[result]  Nonexistent candidate correctly returns 404  ✓")
 
     @pytest.mark.anyio
-    async def test_stats_and_interviews_returned(self, client: AsyncClient, db_session: AsyncSession):
+    async def test_stats_and_interviews_returned(
+        self, client: AsyncClient, db_session: AsyncSession
+    ):
         """
         GIVEN a candidate with multiple interviews of varying statuses and ratings
         WHEN  GET /candidates/{id} is called
@@ -231,11 +237,15 @@ class TestGetCandidate:
 
         assert len(body["interviews"]) == 3
         role_titles = {i["role_title"] for i in body["interviews"]}
-        assert role_titles == {"Backend Engineer", "Frontend Engineer", "DevOps Engineer"}
+        assert role_titles == {
+            "Backend Engineer", "Frontend Engineer", "DevOps Engineer"
+        }
         logger.info("[result] Stats and interview list correct  ✓")
 
     @pytest.mark.anyio
-    async def test_summary_nested_data(self, client: AsyncClient, db_session: AsyncSession):
+    async def test_summary_nested_data(
+        self, client: AsyncClient, db_session: AsyncSession
+    ):
         """
         GIVEN a candidate with an interview that has a full summary
           (highlights, red flags, skills_assessed)
@@ -274,16 +284,34 @@ class TestGetCandidate:
         logger.info("[seed] Created summary %s", summary.id)
 
         highlights = [
-            InterviewHighlight(summary_id=summary.id, content="Great problem solver", sort_order=1),
-            InterviewHighlight(summary_id=summary.id, content="Clear communicator", sort_order=2),
+            InterviewHighlight(
+                summary_id=summary.id,
+                content="Great problem solver",
+                sort_order=1,
+            ),
+            InterviewHighlight(
+                summary_id=summary.id,
+                content="Clear communicator",
+                sort_order=2,
+            ),
         ]
         red_flags = [
-            InterviewRedFlag(summary_id=summary.id, content="Needs more system design practice", sort_order=1),
+            InterviewRedFlag(
+                summary_id=summary.id,
+                content="Needs more system design practice",
+                sort_order=1,
+            ),
         ]
         skills = [
-            InterviewSkillToAssess(summary_id=summary.id, skill="Python", sort_order=1),
-            InterviewSkillToAssess(summary_id=summary.id, skill="FastAPI", sort_order=2),
-            InterviewSkillToAssess(summary_id=summary.id, skill="PostgreSQL", sort_order=3),
+            InterviewSkillToAssess(
+                summary_id=summary.id, skill="Python", sort_order=1
+            ),
+            InterviewSkillToAssess(
+                summary_id=summary.id, skill="FastAPI", sort_order=2
+            ),
+            InterviewSkillToAssess(
+                summary_id=summary.id, skill="PostgreSQL", sort_order=3
+            ),
         ]
         db_session.add_all(highlights + red_flags + skills)
         await db_session.commit()
@@ -304,11 +332,15 @@ class TestGetCandidate:
         assert interview_data["summary"]["ai_assessment"] == "Strong technical skills"
         assert interview_data["summary"]["status"] == "generated"
         assert len(interview_data["summary"]["highlights"]) == 2
-        assert interview_data["summary"]["highlights"][0]["content"] == "Great problem solver"
-        assert interview_data["summary"]["highlights"][0]["sort_order"] == 1
-        assert interview_data["summary"]["highlights"][1]["content"] == "Clear communicator"
+        hl0 = interview_data["summary"]["highlights"][0]
+        hl1 = interview_data["summary"]["highlights"][1]
+        assert hl0["content"] == "Great problem solver"
+        assert hl0["sort_order"] == 1
+        assert hl1["content"] == "Clear communicator"
+
         assert len(interview_data["summary"]["red_flags"]) == 1
-        assert interview_data["summary"]["red_flags"][0]["content"] == "Needs more system design practice"
+        rf0 = interview_data["summary"]["red_flags"][0]
+        assert rf0["content"] == "Needs more system design practice"
         assert len(interview_data["summary"]["skills_assessed"]) == 3
         assert interview_data["summary"]["skills_assessed"][0]["skill"] == "Python"
         assert interview_data["summary"]["skills_assessed"][1]["skill"] == "FastAPI"
@@ -316,7 +348,9 @@ class TestGetCandidate:
         logger.info("[result] Nested summary data returned correctly  ✓")
 
     @pytest.mark.anyio
-    async def test_interview_without_summary(self, client: AsyncClient, db_session: AsyncSession):
+    async def test_interview_without_summary(
+        self, client: AsyncClient, db_session: AsyncSession
+    ):
         """
         GIVEN a candidate with an interview that has NO summary
         WHEN  GET /candidates/{id} is called
