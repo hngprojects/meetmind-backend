@@ -196,24 +196,40 @@ class TestGetCandidate:
         interviewer_id = uuid.UUID(user_id)
 
         int1 = Interview(
-            workspace_id=ws.id, candidate_id=candidate.id,
-            interviewer_id=interviewer_id, role_title="Backend Engineer",
-            status="completed", scheduled_start=base_time,
-            duration_min=60, platform="zoom", rating=4,
-            questions_asked=8, questions_total=10,
+            workspace_id=ws.id,
+            candidate_id=candidate.id,
+            interviewer_id=interviewer_id,
+            role_title="Backend Engineer",
+            status="completed",
+            scheduled_start=base_time,
+            duration_min=60,
+            platform="zoom",
+            rating=4,
+            questions_asked=8,
+            questions_total=10,
         )
         int2 = Interview(
-            workspace_id=ws.id, candidate_id=candidate.id,
-            interviewer_id=interviewer_id, role_title="Frontend Engineer",
-            status="completed", scheduled_start=base_time,
-            duration_min=45, platform="google_meet", rating=5,
-            questions_asked=6, questions_total=6,
+            workspace_id=ws.id,
+            candidate_id=candidate.id,
+            interviewer_id=interviewer_id,
+            role_title="Frontend Engineer",
+            status="completed",
+            scheduled_start=base_time,
+            duration_min=45,
+            platform="google_meet",
+            rating=5,
+            questions_asked=6,
+            questions_total=6,
         )
         int3 = Interview(
-            workspace_id=ws.id, candidate_id=candidate.id,
-            interviewer_id=interviewer_id, role_title="DevOps Engineer",
-            status="scheduled", scheduled_start=base_time,
-            duration_min=30, platform="teams",
+            workspace_id=ws.id,
+            candidate_id=candidate.id,
+            interviewer_id=interviewer_id,
+            role_title="DevOps Engineer",
+            status="scheduled",
+            scheduled_start=base_time,
+            duration_min=30,
+            platform="teams",
         )
         db_session.add_all([int1, int2, int3])
         await db_session.commit()
@@ -238,7 +254,9 @@ class TestGetCandidate:
         assert len(body["interviews"]) == 3
         role_titles = {i["role_title"] for i in body["interviews"]}
         assert role_titles == {
-            "Backend Engineer", "Frontend Engineer", "DevOps Engineer"
+            "Backend Engineer",
+            "Frontend Engineer",
+            "DevOps Engineer",
         }
         logger.info("[result] Stats and interview list correct  ✓")
 
@@ -265,9 +283,11 @@ class TestGetCandidate:
         await db_session.refresh(candidate)
 
         interview = Interview(
-            workspace_id=ws.id, candidate_id=candidate.id,
+            workspace_id=ws.id,
+            candidate_id=candidate.id,
             interviewer_id=uuid.UUID(user_id),
-            role_title="Engineer", status="completed",
+            role_title="Engineer",
+            status="completed",
         )
         db_session.add(interview)
         await db_session.commit()
@@ -303,9 +323,7 @@ class TestGetCandidate:
             ),
         ]
         skills = [
-            InterviewSkillToAssess(
-                summary_id=summary.id, skill="Python", sort_order=1
-            ),
+            InterviewSkillToAssess(summary_id=summary.id, skill="Python", sort_order=1),
             InterviewSkillToAssess(
                 summary_id=summary.id, skill="FastAPI", sort_order=2
             ),
@@ -369,9 +387,11 @@ class TestGetCandidate:
         await db_session.refresh(candidate)
 
         interview = Interview(
-            workspace_id=ws.id, candidate_id=candidate.id,
+            workspace_id=ws.id,
+            candidate_id=candidate.id,
             interviewer_id=uuid.UUID(user_id),
-            role_title="Engineer", status="scheduled",
+            role_title="Engineer",
+            status="scheduled",
         )
         db_session.add(interview)
         await db_session.commit()
@@ -409,9 +429,11 @@ class TestGetCandidate:
         await db_session.refresh(candidate)
 
         interview = Interview(
-            workspace_id=ws.id, candidate_id=candidate.id,
+            workspace_id=ws.id,
+            candidate_id=candidate.id,
             interviewer_id=uuid.UUID(user_id),
-            role_title="Engineer", status="scheduled",
+            role_title="Engineer",
+            status="scheduled",
         )
         db_session.add(interview)
         await db_session.commit()
@@ -450,19 +472,28 @@ class TestGetCandidate:
         interviewer_id = uuid.UUID(user_id)
 
         past = Interview(
-            workspace_id=ws.id, candidate_id=candidate.id,
-            interviewer_id=interviewer_id, role_title="Past",
-            status="completed", scheduled_start=datetime(2025, 1, 1),
+            workspace_id=ws.id,
+            candidate_id=candidate.id,
+            interviewer_id=interviewer_id,
+            role_title="Past",
+            status="completed",
+            scheduled_start=datetime(2025, 1, 1),
         )
         recent = Interview(
-            workspace_id=ws.id, candidate_id=candidate.id,
-            interviewer_id=interviewer_id, role_title="Recent",
-            status="completed", scheduled_start=datetime(2025, 6, 15),
+            workspace_id=ws.id,
+            candidate_id=candidate.id,
+            interviewer_id=interviewer_id,
+            role_title="Recent",
+            status="completed",
+            scheduled_start=datetime(2025, 6, 15),
         )
         middle = Interview(
-            workspace_id=ws.id, candidate_id=candidate.id,
-            interviewer_id=interviewer_id, role_title="Middle",
-            status="completed", scheduled_start=datetime(2025, 3, 1),
+            workspace_id=ws.id,
+            candidate_id=candidate.id,
+            interviewer_id=interviewer_id,
+            role_title="Middle",
+            status="completed",
+            scheduled_start=datetime(2025, 3, 1),
         )
         db_session.add_all([past, recent, middle])
         await db_session.commit()

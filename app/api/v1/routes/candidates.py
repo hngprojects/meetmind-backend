@@ -29,9 +29,7 @@ async def get_candidate(
     computed stats, and AI summary data."""
 
     # ── 1. Candidate ──────────────────────────────────────────
-    result = await db.execute(
-        select(Candidate).where(Candidate.id == candidate_id)
-    )
+    result = await db.execute(select(Candidate).where(Candidate.id == candidate_id))
     candidate = result.scalar_one_or_none()
 
     if not candidate:
@@ -55,8 +53,9 @@ async def get_candidate(
     summary_ids = []
     if interview_ids:
         result = await db.execute(
-            select(InterviewSummary)
-            .where(InterviewSummary.interview_id.in_(interview_ids))
+            select(InterviewSummary).where(
+                InterviewSummary.interview_id.in_(interview_ids)
+            )
         )
         for s in result.scalars().all():
             summary_map[s.interview_id] = s
@@ -104,33 +103,37 @@ async def get_candidate(
     for interview in interviews:
         summary = summary_map.get(interview.id)
         sid = summary.id if summary else None
-        interviews_out.append({
-            "id": interview.id,
-            "role_title": interview.role_title,
-            "status": interview.status,
-            "platform": interview.platform,
-            "scheduled_start": interview.scheduled_start,
-            "duration_min": interview.duration_min,
-            "rating": interview.rating,
-            "questions_asked": interview.questions_asked,
-            "questions_total": interview.questions_total,
-            "summary": {
-                "ai_assessment": summary.ai_assessment if summary else None,
-                "status": summary.status if summary else None,
-                "highlights": [
-                    {"content": h.content, "sort_order": h.sort_order}
-                    for h in highlights_map.get(sid, [])
-                ],
-                "red_flags": [
-                    {"content": r.content, "sort_order": r.sort_order}
-                    for r in red_flags_map.get(sid, [])
-                ],
-                "skills_assessed": [
-                    {"skill": s.skill, "sort_order": s.sort_order}
-                    for s in skills_map.get(sid, [])
-                ],
-            } if summary else None,
-        })
+        interviews_out.append(
+            {
+                "id": interview.id,
+                "role_title": interview.role_title,
+                "status": interview.status,
+                "platform": interview.platform,
+                "scheduled_start": interview.scheduled_start,
+                "duration_min": interview.duration_min,
+                "rating": interview.rating,
+                "questions_asked": interview.questions_asked,
+                "questions_total": interview.questions_total,
+                "summary": {
+                    "ai_assessment": summary.ai_assessment if summary else None,
+                    "status": summary.status if summary else None,
+                    "highlights": [
+                        {"content": h.content, "sort_order": h.sort_order}
+                        for h in highlights_map.get(sid, [])
+                    ],
+                    "red_flags": [
+                        {"content": r.content, "sort_order": r.sort_order}
+                        for r in red_flags_map.get(sid, [])
+                    ],
+                    "skills_assessed": [
+                        {"skill": s.skill, "sort_order": s.sort_order}
+                        for s in skills_map.get(sid, [])
+                    ],
+                }
+                if summary
+                else None,
+            }
+        )
 
     return {
         "id": candidate.id,
@@ -148,5 +151,3 @@ async def get_candidate(
         },
         "interviews": interviews_out,
     }
-    
-    
