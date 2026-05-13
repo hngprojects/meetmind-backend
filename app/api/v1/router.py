@@ -12,6 +12,7 @@ from app.api.v1.routes import (
     interviews,
     meetings,
     users,
+    waitlist,
     workspaces,
 )
 
@@ -29,3 +30,4 @@ api_router.include_router(
     integrations.router, prefix="/integrations", tags=["Integrations"]
 )
 api_router.include_router(ask_mind.router, prefix="/ask-mind", tags=["Ask Mind"])
+api_router.include_router(waitlist.router, prefix="/waitlist", tags=["Waitlist"])
