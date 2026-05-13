@@ -168,9 +168,8 @@ async def get_candidate(
 
     # ── 1. Candidate ──────────────────────────────────────────
     # Scope the candidate query to the current user's workspace to prevent
-    # cross-workspace data leakage.  _get_or_create_workspace creates a
-    # default workspace if the user does not have one yet (e.g. fresh
-    # signup).
+    # cross-workspace data leakage. _get_or_create_workspace creates a
+    # default workspace if the user does not have one yet (e.g. fresh signup).
     workspace_id = await _get_or_create_workspace(db, current_user)
     result = await db.execute(
         select(Candidate).where(
@@ -269,15 +268,15 @@ async def get_candidate(
                     "ai_assessment": summary.ai_assessment,
                     "status": summary.status,
                     "highlights": [
-                        {"content": h.content, "sort_order": h.sort_order}
+                        {"content": h.content}
                         for h in highlights_map.get(sid, [])
                     ],
                     "red_flags": [
-                        {"content": r.content, "sort_order": r.sort_order}
+                        {"content": r.content}
                         for r in red_flags_map.get(sid, [])
                     ],
                     "skills_assessed": [
-                        {"skill": s.skill, "sort_order": s.sort_order}
+                        {"skill": s.skill}
                         for s in skills_map.get(sid, [])
                     ],
                 }

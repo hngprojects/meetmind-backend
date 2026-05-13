@@ -413,7 +413,6 @@ class TestGetCandidate:
         hl0 = interview_data["summary"]["highlights"][0]
         hl1 = interview_data["summary"]["highlights"][1]
         assert hl0["content"] == "Great problem solver"
-        assert hl0["sort_order"] == 1
         assert hl1["content"] == "Clear communicator"
 
         assert len(interview_data["summary"]["red_flags"]) == 1
