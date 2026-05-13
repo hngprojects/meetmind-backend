@@ -10,7 +10,11 @@ from alembic import context
 from app.core.config import settings
 from app.models import Base
 
+from configparser import ConfigParser
+
 config = context.config
+# Disable interpolation to handle URLs with %
+config.file_config = ConfigParser(interpolation=None)
 config.set_main_option("sqlalchemy.url", str(settings.DATABASE_URL))
 
 if config.config_file_name is not None:
