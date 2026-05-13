@@ -2,10 +2,11 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, status
 from sqlalchemy import select
 
 from app.api.deps import CurrentUser, DBSession
+from app.core.responses import APIError, success
 from app.models.interview import (
     Candidate,
     Interview,
@@ -14,12 +15,11 @@ from app.models.interview import (
     InterviewSkillToAssess,
     InterviewSummary,
 )
-from app.schemas.candidate import CandidateProfileOut
 
 router = APIRouter()
 
 
-@router.get("/{candidate_id}", response_model=CandidateProfileOut)
+@router.get("/{candidate_id}")
 async def get_candidate(
     candidate_id: UUID,
     db: DBSession,
@@ -33,9 +33,10 @@ async def get_candidate(
     candidate = result.scalar_one_or_none()
 
     if not candidate:
-        raise HTTPException(
+        raise APIError(
+            "Candidate not found",
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Candidate not found",
+            code="candidate_not_found",
         )
 
     # ── 2. Interviews ─────────────────────────────────────────
@@ -115,8 +116,8 @@ async def get_candidate(
                 "questions_asked": interview.questions_asked,
                 "questions_total": interview.questions_total,
                 "summary": {
-                    "ai_assessment": summary.ai_assessment if summary else None,
-                    "status": summary.status if summary else None,
+                    "ai_assessment": summary.ai_assessment,
+                    "status": summary.status,
                     "highlights": [
                         {"content": h.content, "sort_order": h.sort_order}
                         for h in highlights_map.get(sid, [])
@@ -135,19 +136,22 @@ async def get_candidate(
             }
         )
 
-    return {
-        "id": candidate.id,
-        "full_name": candidate.full_name,
-        "email": candidate.email,
-        "phone": candidate.phone,
-        "avatar_initials": candidate.avatar_initials,
-        "resume_url": candidate.resume_url,
-        "portfolio_url": candidate.portfolio_url,
-        "stats": {
-            "total_interviews": total,
-            "completed": completed,
-            "scheduled": scheduled,
-            "average_rating": avg_rating,
+    return success(
+        {
+            "id": candidate.id,
+            "full_name": candidate.full_name,
+            "email": candidate.email,
+            "phone": candidate.phone,
+            "avatar_initials": candidate.avatar_initials,
+            "resume_url": candidate.resume_url,
+            "portfolio_url": candidate.portfolio_url,
+            "stats": {
+                "total_interviews": total,
+                "completed": completed,
+                "scheduled": scheduled,
+                "average_rating": avg_rating,
+            },
+            "interviews": interviews_out,
         },
-        "interviews": interviews_out,
-    }
+        message="Candidate profile retrieved",
+    )

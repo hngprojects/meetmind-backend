@@ -71,6 +71,14 @@ def auth_headers(token: str) -> dict:
 
 
 class TestGetCandidate:
+    async def _seed_workspace(self, db_session: AsyncSession) -> Workspace:
+        """Create a workspace."""
+        ws = Workspace(name="Test Workspace")
+        db_session.add(ws)
+        await db_session.commit()
+        await db_session.refresh(ws)
+        return ws
+
     @pytest.mark.anyio
     async def test_returns_candidate_profile(
         self, client: AsyncClient, db_session: AsyncSession
@@ -80,12 +88,9 @@ class TestGetCandidate:
         WHEN  GET /candidates/{id} is called
         THEN  the response is 200 with the full candidate profile, empty stats
         """
-        token, _ = await signup_and_get_token(client, unique_user())
+        token, user_id = await signup_and_get_token(client, unique_user())
 
-        ws = Workspace(name="Test Workspace")
-        db_session.add(ws)
-        await db_session.commit()
-        await db_session.refresh(ws)
+        ws = await self._seed_workspace(db_session)
 
         candidate = Candidate(
             workspace_id=ws.id,
@@ -111,18 +116,19 @@ class TestGetCandidate:
         assert response.status_code == 200, (
             f"Expected 200 but got {response.status_code}. Body: {body}"
         )
-        assert body["id"] == str(candidate.id)
-        assert body["full_name"] == "Jane Doe"
-        assert body["email"] == "jane@example.com"
-        assert body["phone"] == "+1234567890"
-        assert body["avatar_initials"] == "JD"
-        assert body["resume_url"] == "https://example.com/resume.pdf"
-        assert body["portfolio_url"] == "https://example.com/portfolio"
-        assert body["stats"]["total_interviews"] == 0
-        assert body["stats"]["completed"] == 0
-        assert body["stats"]["scheduled"] == 0
-        assert body["stats"]["average_rating"] is None
-        assert body["interviews"] == []
+        data = body["data"]
+        assert data["id"] == str(candidate.id)
+        assert data["full_name"] == "Jane Doe"
+        assert data["email"] == "jane@example.com"
+        assert data["phone"] == "+1234567890"
+        assert data["avatar_initials"] == "JD"
+        assert data["resume_url"] == "https://example.com/resume.pdf"
+        assert data["portfolio_url"] == "https://example.com/portfolio"
+        assert data["stats"]["total_interviews"] == 0
+        assert data["stats"]["completed"] == 0
+        assert data["stats"]["scheduled"] == 0
+        assert data["stats"]["average_rating"] is None
+        assert data["interviews"] == []
         logger.info("[result] Candidate profile returned with correct fields  ✓")
 
     @pytest.mark.anyio
@@ -181,10 +187,7 @@ class TestGetCandidate:
         """
         token, user_id = await signup_and_get_token(client, unique_user())
 
-        ws = Workspace(name="Test Workspace")
-        db_session.add(ws)
-        await db_session.commit()
-        await db_session.refresh(ws)
+        ws = await self._seed_workspace(db_session)
 
         candidate = Candidate(workspace_id=ws.id, full_name="John Smith")
         db_session.add(candidate)
@@ -246,13 +249,14 @@ class TestGetCandidate:
         logger.info("[get] GET /candidates/%s → %d", candidate.id, response.status_code)
 
         assert response.status_code == 200
-        assert body["stats"]["total_interviews"] == 3
-        assert body["stats"]["completed"] == 2
-        assert body["stats"]["scheduled"] == 1
-        assert body["stats"]["average_rating"] == 4.5
+        data = body["data"]
+        assert data["stats"]["total_interviews"] == 3
+        assert data["stats"]["completed"] == 2
+        assert data["stats"]["scheduled"] == 1
+        assert data["stats"]["average_rating"] == 4.5
 
-        assert len(body["interviews"]) == 3
-        role_titles = {i["role_title"] for i in body["interviews"]}
+        assert len(data["interviews"]) == 3
+        role_titles = {i["role_title"] for i in data["interviews"]}
         assert role_titles == {
             "Backend Engineer",
             "Frontend Engineer",
@@ -272,10 +276,7 @@ class TestGetCandidate:
         """
         token, user_id = await signup_and_get_token(client, unique_user())
 
-        ws = Workspace(name="Test Workspace")
-        db_session.add(ws)
-        await db_session.commit()
-        await db_session.refresh(ws)
+        ws = await self._seed_workspace(db_session)
 
         candidate = Candidate(workspace_id=ws.id, full_name="Summary Test")
         db_session.add(candidate)
@@ -343,9 +344,10 @@ class TestGetCandidate:
         logger.info("[get] GET /candidates/%s → %d", candidate.id, response.status_code)
 
         assert response.status_code == 200
-        assert len(body["interviews"]) == 1
+        data = body["data"]
+        assert len(data["interviews"]) == 1
 
-        interview_data = body["interviews"][0]
+        interview_data = data["interviews"][0]
         assert interview_data["summary"] is not None
         assert interview_data["summary"]["ai_assessment"] == "Strong technical skills"
         assert interview_data["summary"]["status"] == "generated"
@@ -376,10 +378,7 @@ class TestGetCandidate:
         """
         token, user_id = await signup_and_get_token(client, unique_user())
 
-        ws = Workspace(name="Test Workspace")
-        db_session.add(ws)
-        await db_session.commit()
-        await db_session.refresh(ws)
+        ws = await self._seed_workspace(db_session)
 
         candidate = Candidate(workspace_id=ws.id, full_name="No Summary")
         db_session.add(candidate)
@@ -403,8 +402,9 @@ class TestGetCandidate:
         body = response.json()
 
         assert response.status_code == 200
-        assert len(body["interviews"]) == 1
-        assert body["interviews"][0]["summary"] is None
+        data = body["data"]
+        assert len(data["interviews"]) == 1
+        assert data["interviews"][0]["summary"] is None
         logger.info("[result] Interview without summary correctly yields null  ✓")
 
     @pytest.mark.anyio
@@ -418,10 +418,7 @@ class TestGetCandidate:
         """
         token, user_id = await signup_and_get_token(client, unique_user("rating_none"))
 
-        ws = Workspace(name="Test Workspace")
-        db_session.add(ws)
-        await db_session.commit()
-        await db_session.refresh(ws)
+        ws = await self._seed_workspace(db_session)
 
         candidate = Candidate(workspace_id=ws.id, full_name="No Ratings")
         db_session.add(candidate)
@@ -445,7 +442,8 @@ class TestGetCandidate:
         body = response.json()
 
         assert response.status_code == 200
-        assert body["stats"]["average_rating"] is None
+        data = body["data"]
+        assert data["stats"]["average_rating"] is None
         logger.info("[result] average_rating is None when no completed interviews  ✓")
 
     @pytest.mark.anyio
@@ -459,10 +457,7 @@ class TestGetCandidate:
         """
         token, user_id = await signup_and_get_token(client, unique_user("ordering"))
 
-        ws = Workspace(name="Test Workspace")
-        db_session.add(ws)
-        await db_session.commit()
-        await db_session.refresh(ws)
+        ws = await self._seed_workspace(db_session)
 
         candidate = Candidate(workspace_id=ws.id, full_name="Order Test")
         db_session.add(candidate)
@@ -505,7 +500,8 @@ class TestGetCandidate:
         body = response.json()
 
         assert response.status_code == 200
-        titles = [i["role_title"] for i in body["interviews"]]
+        data = body["data"]
+        titles = [i["role_title"] for i in data["interviews"]]
         assert titles == ["Recent", "Middle", "Past"], (
             f"Expected [Recent, Middle, Past] but got {titles}"
         )
