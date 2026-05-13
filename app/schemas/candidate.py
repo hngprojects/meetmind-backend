@@ -1,61 +1,44 @@
-"""Candidate response schemas."""
+# app/schemas/candidate.py
+"""
+Pydantic schemas for candidate search and export.
 
+Why a separate schema file?
+Each domain in this codebase has its own schema file — auth.py, interview.py,
+verification.py. Following that pattern keeps things predictable and avoids
+circular imports between models and routes.
+"""
+
+import uuid
 from datetime import datetime
-from uuid import UUID
 
-from pydantic import BaseModel
-
-
-class InterviewHighlightOut(BaseModel):
-    content: str
-    sort_order: int | None = None
+from pydantic import BaseModel, EmailStr
 
 
-class InterviewRedFlagOut(BaseModel):
-    content: str
-    sort_order: int | None = None
+class CandidateSearchResult(BaseModel):
+    """
+    Represents a single candidate in the search results list.
+    We expose only the fields useful for a search result card —
+    not the full candidate record with all URLs. This follows the
+    principle of minimal data exposure: don't send what the client
+    doesn't need.
+    Why not use the full Candidate model directly?
+    SQLAlchemy models are not Pydantic models. We cannot return them
+    directly from FastAPI routes. We need a Pydantic schema that mirrors
+    the fields we want to expose. This schema is the contract between
+    our service and the outside world.
+    """
 
-
-class InterviewSkillOut(BaseModel):
-    skill: str
-    sort_order: int | None = None
-
-
-class InterviewSummaryOut(BaseModel):
-    ai_assessment: str | None = None
-    status: str | None = None
-    highlights: list[InterviewHighlightOut] = []
-    red_flags: list[InterviewRedFlagOut] = []
-    skills_assessed: list[InterviewSkillOut] = []
-
-
-class InterviewOut(BaseModel):
-    id: UUID
-    role_title: str | None = None
-    status: str | None = None
-    platform: str | None = None
-    scheduled_start: datetime | None = None
-    duration_min: int | None = None
-    rating: int | None = None
-    questions_asked: int | None = None
-    questions_total: int | None = None
-    summary: InterviewSummaryOut | None = None
-
-
-class CandidateStatsOut(BaseModel):
-    total_interviews: int
-    completed: int
-    scheduled: int
-    average_rating: float | None = None
-
-
-class CandidateProfileOut(BaseModel):
-    id: UUID
+    id: uuid.UUID
     full_name: str
-    email: str | None = None
-    phone: str | None = None
-    avatar_initials: str | None = None
-    resume_url: str | None = None
-    portfolio_url: str | None = None
-    stats: CandidateStatsOut
-    interviews: list[InterviewOut] = []
+    email: EmailStr | None
+    phone: str | None
+    avatar_initials: str | None
+    resume_url: str | None
+    portfolio_url: str | None
+    workspace_id: uuid.UUID
+    created_at: datetime | None
+
+    model_config = {"from_attributes": True}
+    # from_attributes=True tells Pydantic to read data from SQLAlchemy
+    # model attributes instead of expecting a dict. Without this,
+    # CandidateSearchResult.model_validate(candidate_orm_object) would fail.
