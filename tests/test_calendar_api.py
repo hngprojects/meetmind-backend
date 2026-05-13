@@ -21,6 +21,8 @@ async def calendar_setup(db_session: AsyncSession):
         id=user_id,
         email=f"cal-{uuid.uuid4().hex[:8]}@meetmind.ai",
         name="Calendar Tester",
+        password_hash="mock_hash",
+        is_verified=True,
     )
     db_session.add(user)
 
@@ -79,7 +81,7 @@ async def test_list_calendar_today(client: AsyncClient, calendar_setup):
         params={"workspace_id": str(workspace_id), "date": today_str},
     )
 
-    app.dependency_overrides.clear()
+    app.dependency_overrides.pop(get_current_user, None)
 
     assert response.status_code == 200
     data = response.json()["data"]
@@ -98,7 +100,7 @@ async def test_list_calendar_unauthorized(client: AsyncClient, calendar_setup):
         "/api/v1/calendar", params={"workspace_id": str(other_workspace_id)}
     )
 
-    app.dependency_overrides.clear()
+    app.dependency_overrides.pop(get_current_user, None)
 
     assert response.status_code == 403
 
@@ -115,7 +117,7 @@ async def test_list_calendar_default_returns_all_future(
         "/api/v1/calendar", params={"workspace_id": str(workspace_id)}
     )
 
-    app.dependency_overrides.clear()
+    app.dependency_overrides.pop(get_current_user, None)
 
     assert response.status_code == 200
     data = response.json()["data"]

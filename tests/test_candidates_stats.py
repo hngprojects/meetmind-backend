@@ -64,7 +64,7 @@ class TestCandidateStatsAccuracy:
         response = await client.get(
             STATS_URL, params={"workspace_id": str(workspace_id)}
         )
-        app.dependency_overrides.clear()
+        app.dependency_overrides.pop(get_current_user, None)
 
         assert response.status_code == 200
         data = response.json()["data"]
@@ -97,7 +97,7 @@ class TestCandidateStatsAccuracy:
         response = await client.get(
             STATS_URL, params={"workspace_id": str(workspace_id)}
         )
-        app.dependency_overrides.clear()
+        app.dependency_overrides.pop(get_current_user, None)
 
         assert response.status_code == 200
         data = response.json()["data"]
@@ -133,7 +133,7 @@ class TestCandidateStatsSecurity:
         response = await client.get(
             STATS_URL, params={"workspace_id": str(workspace_id)}
         )
-        app.dependency_overrides.clear()
+        app.dependency_overrides.pop(get_current_user, None)
 
         assert response.status_code == 403
         body = response.json()
@@ -166,7 +166,7 @@ class TestCandidateStatsPerformance:
         )
         elapsed_ms = (time.perf_counter() - start) * 1000
 
-        app.dependency_overrides.clear()
+        app.dependency_overrides.pop(get_current_user, None)
 
         assert response.status_code == 200
         data = response.json()["data"]
