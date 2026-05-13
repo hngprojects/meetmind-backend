@@ -1,1 +1,1 @@
-from . import redis
+from . import redis as redis
