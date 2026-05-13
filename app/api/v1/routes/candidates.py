@@ -268,16 +268,13 @@ async def get_candidate(
                     "ai_assessment": summary.ai_assessment,
                     "status": summary.status,
                     "highlights": [
-                        {"content": h.content}
-                        for h in highlights_map.get(sid, [])
+                        {"content": h.content} for h in highlights_map.get(sid, [])
                     ],
                     "red_flags": [
-                        {"content": r.content}
-                        for r in red_flags_map.get(sid, [])
+                        {"content": r.content} for r in red_flags_map.get(sid, [])
                     ],
                     "skills_assessed": [
-                        {"skill": s.skill}
-                        for s in skills_map.get(sid, [])
+                        {"skill": s.skill} for s in skills_map.get(sid, [])
                     ],
                 }
                 if summary
