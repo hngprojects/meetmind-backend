@@ -17,12 +17,10 @@ from pydantic import BaseModel, EmailStr
 class CandidateSearchResult(BaseModel):
     """
     Represents a single candidate in the search results list.
-
     We expose only the fields useful for a search result card —
     not the full candidate record with all URLs. This follows the
     principle of minimal data exposure: don't send what the client
     doesn't need.
-
     Why not use the full Candidate model directly?
     SQLAlchemy models are not Pydantic models. We cannot return them
     directly from FastAPI routes. We need a Pydantic schema that mirrors
