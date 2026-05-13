@@ -6,7 +6,7 @@ from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
-from app.main import app
+
 from app.models.interview import Candidate, Interview
 from app.models.user import User
 from app.models.workspace import WorkspaceMember
@@ -73,6 +73,7 @@ async def calendar_setup(db_session: AsyncSession):
 @pytest.mark.anyio
 async def test_list_calendar_today(client: AsyncClient, calendar_setup):
     user, workspace_id = calendar_setup
+    from app.main import app
     app.dependency_overrides[get_current_user] = lambda: user
 
     today_str = date.today().isoformat()
@@ -94,6 +95,7 @@ async def test_list_calendar_today(client: AsyncClient, calendar_setup):
 async def test_list_calendar_unauthorized(client: AsyncClient, calendar_setup):
     user, _ = calendar_setup
     other_workspace_id = uuid.uuid4()
+    from app.main import app
     app.dependency_overrides[get_current_user] = lambda: user
 
     response = await client.get(
@@ -111,6 +113,7 @@ async def test_list_calendar_default_returns_all_future(
 ):
     """Verify that without a date parameter, all future appointments are returned."""
     user, workspace_id = calendar_setup
+    from app.main import app
     app.dependency_overrides[get_current_user] = lambda: user
 
     response = await client.get(
