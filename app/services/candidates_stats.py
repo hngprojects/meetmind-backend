@@ -1,20 +1,23 @@
 import uuid
-from typing import Any, Dict
 
 from sqlalchemy import case, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from app.models.interview import Interview
+from app.schemas.candidates_stats import CandidateStatsData
 
 
 async def get_candidate_stats(
     db: AsyncSession, workspace_id: uuid.UUID
-) -> Dict[str, Any]:
+) -> CandidateStatsData:
     """Fetch aggregated candidate statistics for a specific workspace.
 
     Aggregates counts for total, completed, and ongoing interviews
     at the database level to optimize performance.
+
+    Returns:
+        A validated CandidateStatsData Pydantic model.
     """
     stmt = select(
         func.count(Interview.id).label("total"),
@@ -32,9 +35,9 @@ async def get_candidate_stats(
     result = await db.execute(stmt)
     row = result.first()
 
-    return {
-        "total": int(row.total or 0) if row else 0,
-        "completed": int(row.completed or 0) if row else 0,
-        "ongoing": int(row.ongoing or 0) if row else 0,
-        "needs_attention": int(row.needs_attention or 0) if row else 0,
-    }
+    return CandidateStatsData(
+        total=int(row.total or 0) if row else 0,
+        completed=int(row.completed or 0) if row else 0,
+        ongoing=int(row.ongoing or 0) if row else 0,
+        needs_attention=int(row.needs_attention or 0) if row else 0,
+    )

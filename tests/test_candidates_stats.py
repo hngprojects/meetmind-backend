@@ -6,7 +6,6 @@ from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
-
 from app.models.interview import Candidate, Interview
 from app.models.user import User
 from app.models.workspace import Workspace, WorkspaceMember
@@ -61,6 +60,7 @@ class TestCandidateStatsAccuracy:
         await db_session.commit()
 
         from app.main import app
+
         app.dependency_overrides[get_current_user] = lambda: user
         response = await client.get(
             STATS_URL, params={"workspace_id": str(workspace_id)}
@@ -95,6 +95,7 @@ class TestCandidateStatsAccuracy:
         await db_session.commit()
 
         from app.main import app
+
         app.dependency_overrides[get_current_user] = lambda: user
         response = await client.get(
             STATS_URL, params={"workspace_id": str(workspace_id)}
@@ -132,6 +133,7 @@ class TestCandidateStatsSecurity:
         await db_session.commit()
 
         from app.main import app
+
         app.dependency_overrides[get_current_user] = lambda: user
         response = await client.get(
             STATS_URL, params={"workspace_id": str(workspace_id)}
@@ -162,6 +164,7 @@ class TestCandidateStatsPerformance:
         await db_session.commit()
 
         from app.main import app
+
         app.dependency_overrides[get_current_user] = lambda: user
 
         start = time.perf_counter()

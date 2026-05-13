@@ -6,17 +6,18 @@ from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.interview import Candidate, Interview
+from app.schemas.calendar import AppointmentResponse
 
 
 async def get_calendar_appointments(
     db: AsyncSession,
     workspace_id: uuid.UUID,
     filter_date: Optional[date] = None,
-) -> List[dict]:
+) -> List[AppointmentResponse]:
     """Retrieve scheduled interview appointments for a specific workspace.
 
-    This service performs a relational join between Interviews and Candidates
-    to return a comprehensive view of upcoming engagements.
+    Performs a relational join between Interviews and Candidates to return
+    a comprehensive, Pydantic-validated view of upcoming engagements.
 
     Args:
         db: The asynchronous database session.
@@ -25,14 +26,7 @@ async def get_calendar_appointments(
             returns all future appointments from the current timestamp.
 
     Returns:
-        A list of dictionaries containing appointment details:
-        - id: Interview UUID
-        - scheduled_start: Start timestamp
-        - scheduled_end: End timestamp
-        - role_title: The position being interviewed for
-        - status: Current interview status
-        - candidate_name: Full name of the candidate
-        - candidate_email: Contact email of the candidate
+        A list of validated ``AppointmentResponse`` Pydantic models.
     """
     stmt = (
         select(
@@ -68,4 +62,4 @@ async def get_calendar_appointments(
     result = await db.execute(stmt)
     rows = result.all()
 
-    return [dict(row._mapping) for row in rows]
+    return [AppointmentResponse.model_validate(dict(row._mapping)) for row in rows]

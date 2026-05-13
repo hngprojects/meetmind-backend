@@ -30,8 +30,8 @@ async def list_appointments(
         current_user: The authenticated user making the request.
 
     Returns:
-        A standardized success envelope with a list of appointments, each containing
-        candidate details and scheduled time slots.
+        A standardized success envelope with a list of appointments, each
+        containing candidate details and scheduled time slots.
 
     Raises:
         APIError: 403 if the user is not a member of the workspace.
@@ -40,10 +40,11 @@ async def list_appointments(
     # Enforce RBAC and multi-tenancy boundaries
     await validate_workspace_membership(db, workspace_id, current_user.id)
 
-    # Fetch processed appointment data
+    # Fetch Pydantic-validated appointment data
     appointments = await get_calendar_appointments(db, workspace_id, date)
 
+    # Serialize each AppointmentResponse model to a dict for the success envelope
     return success(
-        data={"appointments": appointments},
+        data={"appointments": [a.model_dump(mode="json") for a in appointments]},
         message="Calendar appointments fetched successfully",
     )

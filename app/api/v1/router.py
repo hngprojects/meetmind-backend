@@ -7,6 +7,7 @@ from app.api.v1.routes import (
     auth,
     calendar,
     candidates,
+    candidates_stats,
     dashboard,
     health,
     integrations,
@@ -28,6 +29,9 @@ api_router.include_router(workspaces.router, prefix="/workspaces", tags=["Worksp
 api_router.include_router(meetings.router, prefix="/meetings", tags=["Meetings"])
 api_router.include_router(interviews.router, prefix="/interviews", tags=["Interviews"])
 api_router.include_router(candidates.router, prefix="/candidates", tags=["Candidates"])
+api_router.include_router(
+    candidates_stats.router, prefix="/candidates", tags=["Candidates"]
+)
 api_router.include_router(calendar.router, prefix="/calendar", tags=["Calendar"])
 api_router.include_router(
     integrations.router, prefix="/integrations", tags=["Integrations"]
